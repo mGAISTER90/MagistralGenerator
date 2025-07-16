@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Futurista - Sin Captcha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            color: #00ff88;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 0, 136, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            min-height: 100vh;
+        }
+
+        .left-panel {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 600px;
+        }
+
+        .card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 136, 0.2),
+                inset 0 0 30px rgba(0, 255, 136, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 900;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #00ff88, #00ffff, #ff0088);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #00ffff;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            color: #00ff88;
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        input::placeholder {
+            color: rgba(0, 255, 136, 0.5);
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, #00ff88, #00ffff);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 900;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+            background: linear-gradient(45deg, #00ffff, #00ff88);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-container {
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 136, 0.2),
+                inset 0 0 30px rgba(0, 255, 136, 0.05);
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .results-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #00ffff;
+            text-transform: uppercase;
+        }
+
+        .results-count {
+            color: #00ff88;
+            font-size: 0.9em;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .results-textbox {
+            flex: 1;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            color: #00ff88;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .info-panel {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00ffff;
+        }
+
+        .warning-panel {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffa500;
+            color: #ffa500;
+        }
+
+        small {
+            color: rgba(0, 255, 136, 0.7);
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .right-panel {
+                min-width: unset;
+            }
+            
+            .results-container {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="card">
+                <h1>⚡ GENERATOR</h1>
+                
+                <div class="warning-panel">
+                    <strong>⚠️ ALERT:</strong> Solo para uso PERSONAL.
+                </div>
+
+                <div class="info-panel">
+                    <strong>🔮 CEO:</strong> GENERATOR MAGISTRAL.
+                </div>
+
+                <form id="generatorForm">
+                    <div class="form-group">
+                        <label for="bin">BIN / Pattern:</label>
+                        <input type="text" id="bin" placeholder="4539XXXXXXXXXXXX" maxlength="19">
+                        <small>💡 Usa X para posiciones aleatorias</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cardType">Card Type:</label>
+                                <select id="cardType">
+                                    <option value="visa">VISA</option>
+                                    <option value="mastercard">MASTERCARD</option>
+                                    <option value="amex">AMERICAN EXPRESS</option>
+                                    <option value="discover">DISCOVER</option>
+                                    <option value="custom">CUSTOM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="quantity">Quantity:</label>
+                                <input type="number" id="quantity" min="1" max="30000" value="100">
+                                <small>⚡ Max: 30,000</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="expMonth">Month:</label>
+                                <select id="expMonth">
+                                    <option value="random">RANDOM</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="expYear">Year:</label>
+                                <select id="expYear">
+                                    <option value="random">RANDOM</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                    <option value="2030">2030</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cvv">CVV:</label>
+                                <input type="text" id="cvv" placeholder="000" maxlength="4">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cvvMode">CVV Mode:</label>
+                                <select id="cvvMode">
+                                    <option value="custom">CUSTOM</option>
+                                    <option value="random">RANDOM</option>
+                                    <option value="same">SAME FOR ALL</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="generate-btn">🚀 GENERATE</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="results-container">
+                <div class="results-header">
+                    <div class="results-title">🔢 Generated Data</div>
+                    <div class="results-count" id="resultsCount">Ready</div>
+                </div>
+                
+                <textarea id="resultsTextbox" class="results-textbox" readonly placeholder="Generated numbers will appear here...
+Format: NUMBER|MONTH|YEAR|CVV
+
+Ready to generate up to 30,000 numbers!"></textarea>
+                
+                <div class="action-buttons">
+                    <button class="action-btn" id="copyBtn">📋 Copy All</button>
+                    <button class="action-btn" id="clearBtn">🗑️ Clear</button>
+                    <button class="action-btn" id="downloadBtn">💾 Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Script started');
+
+        // Variables globales
+        let generatedData = [];
+
+        // Función simple para generar dígito Luhn
+        function generateLuhnDigit(num) {
+            let sum = 0;
+            let alternate = true;
+            for (let i = num.length - 1; i >= 0; i--) {
+                let digit = parseInt(num[i]);
+                if (alternate) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+                alternate = !alternate;
+            }
+            return (10 - (sum % 10)) % 10;
+        }
+
+        // Generar número de tarjeta
+        function generateCardNumber(pattern, cardType) {
+            let length = cardType === 'amex' ? 15 : 16;
+            let cardNumber = '';
+            pattern = pattern.replace(/\s/g, '').toUpperCase();
+            
+            for (let i = 0; i < length - 1; i++) {
+                if (i < pattern.length && pattern[i] !== 'X' && /\d/.test(pattern[i])) {
+                    cardNumber += pattern[i];
+                } else {
+                    cardNumber += Math.floor(Math.random() * 10);
+                }
+            }
+            
+            cardNumber += generateLuhnDigit(cardNumber);
+            return cardNumber;
+        }
+
+        // Generar CVV
+        function generateCVV(cardType, customCvv, cvvMode) {
+            if (cvvMode === 'custom' && customCvv) return customCvv;
+            if (cvvMode === 'same' && customCvv) return customCvv;
+            
+            const length = cardType === 'amex' ? 4 : 3;
+            let cvv = '';
+            for (let i = 0; i < length; i++) {
+                cvv += Math.floor(Math.random() * 10);
+            }
+            return cvv;
+        }
+
+        // Generar fecha
+        function generateExpDate(month, year) {
+            const expMonth = month === 'random' ? 
+                String(Math.floor(Math.random() * 12) + 1).padStart(2, '0') : month;
+            const expYear = year === 'random' ? 
+                String(2025 + Math.floor(Math.random() * 6)) : year;
+            return { month: expMonth, year: expYear };
+        }
+
+        // Mostrar resultados
+        function displayResults(results) {
+            console.log('Displaying results:', results.length);
+            const textbox = document.getElementById('resultsTextbox');
+            const countElement = document.getElementById('resultsCount');
+            
+            const formattedResults = results.map(result => 
+                result.number + '|' + result.expDate.month + '|' + result.expDate.year + '|' + result.cvv
+            );
+            
+            textbox.value = formattedResults.join('\n');
+            countElement.textContent = results.length + ' Generated';
+            generatedData = formattedResults;
+        }
+
+        // Función principal de generación
+        function generateNumbers() {
+            console.log('Generate function called!');
+            
+            try {
+                const pattern = document.getElementById('bin').value || '4539XXXXXXXXXXXX';
+                const cardType = document.getElementById('cardType').value || 'visa';
+                const quantity = parseInt(document.getElementById('quantity').value) || 10;
+                const expMonth = document.getElementById('expMonth').value || 'random';
+                const expYear = document.getElementById('expYear').value || 'random';
+                const customCvv = document.getElementById('cvv').value || '';
+                const cvvMode = document.getElementById('cvvMode').value || 'random';
+                
+                console.log('Generating', quantity, 'numbers with pattern', pattern);
+                
+                const results = [];
+                for (let i = 0; i < quantity; i++) {
+                    const cardNumber = generateCardNumber(pattern, cardType);
+                    const cvv = generateCVV(cardType, customCvv, cvvMode);
+                    const expDate = generateExpDate(expMonth, expYear);
+                    
+                    results.push({
+                        number: cardNumber,
+                        cvv: cvv,
+                        expDate: expDate
+                    });
+                }
+                
+                console.log('Generated results:', results.length);
+                displayResults(results);
+                
+            } catch (error) {
+                console.error('Error generating numbers:', error);
+                alert('Error generating numbers. Check console for details.');
+            }
+        }
+
+        // Funciones de botones
+        function copyAllResults() {
+            const textbox = document.getElementById('resultsTextbox');
+            if (textbox.value) {
+                navigator.clipboard.writeText(textbox.value).then(function() {
+                    const btn = document.getElementById('copyBtn');
+                    btn.textContent = '✓ COPIED';
+                    setTimeout(function() {
+                        btn.textContent = '📋 Copy All';
+                    }, 2000);
+                });
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('resultsTextbox').value = '';
+            document.getElementById('resultsCount').textContent = 'Ready';
+            generatedData = [];
+        }
+
+        function downloadResults() {
+            if (generatedData.length === 0) return;
+            const blob = new Blob([generatedData.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cards_' + Date.now() + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Inicializar cuando cargue la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, setting up events...');
+            
+            // Configurar patrón inicial
+            document.getElementById('bin').placeholder = 'PEGAR BIN A GENERAR';
+            
+            // Event listener para el formulario
+            const form = document.getElementById('generatorForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Form submitted!');
+                    generateNumbers();
+                    return false;
+                });
+            }
+            
+            // Event listeners para botones
+            const copyBtn = document.getElementById('copyBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            if (copyBtn) copyBtn.addEventListener('click', copyAllResults);
+            if (clearBtn) clearBtn.addEventListener('click', clearResults);
+            if (downloadBtn) downloadBtn.addEventListener('click', downloadResults);
+            
+            console.log('All events set up successfully!');
+        });
+
+        console.log('Script loaded successfully');
+
+
+
+                // Eliminar duplicados
+        function removeDuplicates() {
+            const textbox = document.getElementById('resultsTextbox');
+            const lines = textbox.value.split('\n');
+            const uniqueLines = [...new Set(lines.filter(line => line.trim() !== ''))];
+            textbox.value = uniqueLines.join('\n');
+            document.getElementById('resultsCount').textContent = uniqueLines.length + ' Unique';
+            generatedData = uniqueLines;
+        }
+
+        // Ordenar la lista
+        function sortResults() {
+            const textbox = document.getElementById('resultsTextbox');
+            const lines = textbox.value.split('\n').filter(line => line.trim() !== '');
+            lines.sort(); // orden alfabético A-Z
+            textbox.value = lines.join('\n');
+            document.getElementById('resultsCount').textContent = lines.length + ' Sorted';
+            generatedData = lines;
+        }
+
+        // Agregar botones dinámicamente
+        function addExtraButtons() {
+            const container = document.querySelector('.action-buttons');
+            if (!container) return;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '🧹 Eliminar duplicados';
+            removeBtn.className = 'action-btn';
+            removeBtn.onclick = removeDuplicates;
+
+            const sortBtn = document.createElement('button');
+            sortBtn.textContent = '🔢 Ordenar lista';
+            sortBtn.className = 'action-btn';
+            sortBtn.onclick = sortResults;
+
+            container.appendChild(removeBtn);
+            container.appendChild(sortBtn);
+        }
+
+        // Ejecutar al cargar
+        document.addEventListener('DOMContentLoaded', function () {
+            addExtraButtons();
+        });
+
+    </script>
+</body>
+</html>
+
